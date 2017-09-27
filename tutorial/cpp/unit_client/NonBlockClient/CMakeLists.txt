@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 project(client)
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 set(CLIENT_FILELIST
   ./main.cpp
   ./TBufferTransports.cpp
@@ -12,3 +13,4 @@ set(CLIENT_FILELIST
   ./gen-cpp/tutorial_constants.cpp)
 
 add_executable(calculator_client ${CLIENT_FILELIST})
+target_link_libraries(calculator_client pthread)

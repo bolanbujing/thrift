@@ -8,21 +8,49 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include "../gen-cpp/Calculator.h"
+#include "./gen-cpp/Calculator.h"
 #include "binary_protocol.h"
+#include <thread>
+#include <chrono>
+#include <ctime>
+#include <errno.h>
 
 using boost::shared_ptr;                                                                                        
 
-void tserver();
+std::time_t getTimeStamp(){
+	std::chrono::time_point<std::chrono::system_clock,std::chrono::microseconds> tp = std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::system_clock::now());
+	auto tmp=std::chrono::duration_cast<std::chrono::microseconds>(tp.time_since_epoch());
+	return tmp.count();
+}
 
+void tserver();
+void fun(){
+	//std::time_t tbegin = getTimeStamp();	
+	for(int i=0;i<200;i++){
+		tserver();
+	}
+	//std::time_t tend = getTimeStamp();
+	//std::cout << "time :" << (tend-tbegin) << std::endl; 
+}
 int main() {
-  tserver();
+  std::vector<std::thread> thread_vec;
+  std::time_t tbegin = getTimeStamp();
+  for(int i=0; i<100; i++){
+	thread_vec.push_back(std::thread(fun));
+  }
+  for(auto& item : thread_vec){
+	item.join();
+  }
+  std::time_t tend = getTimeStamp();
+  std::cout << "time :" << (tend-tbegin) << std::endl;
+
+  //tserver();
   return 0;
 }
 void tserver(){
   std::cout << "t server" << std::endl;
 
-  const char* ip = "127.0.0.1";
+  const char* ip = "10.8.8.239";
   int port = 9090;
   int backlog = 5;
 
@@ -36,9 +64,9 @@ void tserver(){
 
   int sendbuf = 4096;
   int len = sizeof( sendbuf );
-  setsockopt( fd, SOL_SOCKET, SO_SNDBUF, &sendbuf, sizeof( sendbuf ) );
-  getsockopt( fd, SOL_SOCKET, SO_SNDBUF, &sendbuf, ( socklen_t* )&len );
-  printf( "the send buffer size after settting is %d\n", sendbuf );
+  //setsockopt( fd, SOL_SOCKET, SO_SNDBUF, &sendbuf, sizeof( sendbuf ) );
+  //getsockopt( fd, SOL_SOCKET, SO_SNDBUF, &sendbuf, ( socklen_t* )&len );
+  //printf( "the send buffer size after settting is %d\n", sendbuf );
 
   struct sockaddr_in address;
   bzero(&address,sizeof(address));
@@ -49,6 +77,11 @@ void tserver(){
   //            //地址转换
   inet_pton(AF_INET, ip, &address.sin_addr);
   check_ret = connect(fd, (struct sockaddr*) &address, sizeof(address));
+  if(check_ret < 0){
+    std::cout << "errno : " << errno << std::endl;
+    close(fd);
+    return;
+  }
   assert(check_ret >= 0);
   //发送数据
   boost::shared_ptr<apache::thrift::transport::TMemoryBuffer> strBuffer(new apache::thrift::transport::TMemoryBuffer());
@@ -78,8 +111,8 @@ void tserver(){
   if(retr <= 0){std::cout << "over" << std::endl;} 
   else {std::cout <<"recv:"<<retr << std::endl;}
   {
-    size_t len = *(*uint32_t)RecvBuf;
-    std::cout << "message size = " << len << std::endl;
+    size_t len = *(uint32_t*)RecvBuf;
+    std::cout << "message size = " << ntohl(len) << std::endl;
     boost::shared_ptr<apache::thrift::transport::TMemoryBuffer> strBuffer(new apache::thrift::transport::TMemoryBuffer((uint8_t*)(RecvBuf)+4, len));
     boost::shared_ptr<apache::thrift::protocol::TBinaryProtocol> binaryProtcol(new apache::thrift::protocol::TBinaryProtocol(strBuffer));
     std::string name;

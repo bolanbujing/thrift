@@ -131,13 +131,13 @@ class CalculatorCloneFactory : virtual public CalculatorIfFactory {
 };
 
 int main() {
-/*
+
   TThreadedServer server(
     stdcxx::make_shared<CalculatorProcessorFactory>(stdcxx::make_shared<CalculatorCloneFactory>()),
     stdcxx::make_shared<TServerSocket>(9090), //port
     stdcxx::make_shared<TBufferedTransportFactory>(),
     stdcxx::make_shared<TBinaryProtocolFactory>());
-*/
+
   /*
   // if you don't need per-connection state, do the following instead
   TThreadedServer server(
@@ -173,12 +173,12 @@ int main() {
     stdcxx::make_shared<TBinaryProtocolFactory>(),
     threadManager);
   */
-
+/*
   TNonblockingServer server(
 	stdcxx::make_shared<CalculatorProcessorFactory>(stdcxx::make_shared<CalculatorCloneFactory>()),
 	stdcxx::make_shared<TBinaryProtocolFactory>(),
 	stdcxx::make_shared<apache::thrift::transport::TNonblockingServerSocket>(9090));
-
+*/
   cout << "Starting the server..." << endl;
   server.serve();
   cout << "Done." << endl;
