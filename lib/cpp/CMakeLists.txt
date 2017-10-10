@@ -31,6 +31,7 @@ set( thriftcpp_SOURCES
    src/thrift/async/TConcurrentClientSyncInfo.h
    src/thrift/async/TConcurrentClientSyncInfo.cpp
    src/thrift/concurrency/ThreadManager.cpp
+   src/thrift/concurrency/MessageQueueManager.cpp
    src/thrift/concurrency/TimerManager.cpp
    src/thrift/concurrency/Util.cpp
    src/thrift/processor/PeekProcessor.cpp
@@ -138,6 +139,7 @@ endif()
 # Thrift non blocking server
 set( thriftcppnb_SOURCES
     src/thrift/server/TNonblockingServer.cpp
+    src/thrift/concurrency/MessageQueueManager.cpp
     src/thrift/transport/TNonblockingServerSocket.cpp
     src/thrift/transport/TNonblockingSSLServerSocket.cpp
     src/thrift/async/TAsyncProtocolProcessor.cpp

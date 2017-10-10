@@ -590,7 +590,7 @@ void TNonblockingServer::TConnection::transition() {
 
     server_->incrementActiveProcessors();
 
-    if (server_->isThreadPoolProcessing()) {
+    if (server_->isThreadPoolProcessing() || server_->isMessageQueueProcessing()) {
       // We are setting up a Task to do this work and we will wait on it
 
       // Create task and dispatch to the thread manager
@@ -603,6 +603,11 @@ void TNonblockingServer::TConnection::transition() {
       // data on it while we're still waiting for the threadmanager to
       // finish this task
       setIdle();
+      if(server_->isMessageQueueProcessing()){
+	//GlobalOutput.printf("thread %d add task", getIOThreadNumber());
+	server_->addTask(getIOThreadNumber(), task);
+	return;
+      }
 
       try {
         server_->addTask(task);

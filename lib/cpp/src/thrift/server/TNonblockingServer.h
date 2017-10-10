@@ -28,6 +28,7 @@
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TNonblockingServerTransport.h>
 #include <thrift/concurrency/ThreadManager.h>
+#include <thrift/concurrency/MessageQueueManager.h>
 #include <climits>
 #include <thrift/concurrency/Thread.h>
 #include <thrift/concurrency/PlatformThreadFactory.h>
@@ -53,6 +54,7 @@ using apache::thrift::transport::TNonblockingServerTransport;
 using apache::thrift::protocol::TProtocol;
 using apache::thrift::concurrency::Runnable;
 using apache::thrift::concurrency::ThreadManager;
+using apache::thrift::concurrency::MessageQueueManager;
 using apache::thrift::concurrency::PlatformThreadFactory;
 using apache::thrift::concurrency::ThreadFactory;
 using apache::thrift::concurrency::Thread;
@@ -162,8 +164,13 @@ private:
   /// For processing via thread pool, may be NULL
   stdcxx::shared_ptr<ThreadManager> threadManager_;
 
+  stdcxx::shared_ptr<MessageQueueManager> messageQueueManager_;
+
   /// Is thread pool processing?
   bool threadPoolProcessing_;
+
+  // is message queue processing?
+  bool messageQueueProcessing_;
 
   // Factory to create the IO threads
   stdcxx::shared_ptr<PlatformThreadFactory> ioThreadFactory_;
@@ -282,6 +289,7 @@ private:
     useHighPriorityIOThreads_ = false;
     userEventBase_ = NULL;
     threadPoolProcessing_ = false;
+    messageQueueProcessing_ = false;
     numTConnections_ = 0;
     numActiveProcessors_ = 0;
     connectionStackLimit_ = CONNECTION_STACK_LIMIT;
@@ -326,6 +334,20 @@ public:
     setOutputProtocolFactory(protocolFactory);
     setThreadManager(threadManager);
   }
+
+  TNonblockingServer(const stdcxx::shared_ptr<TProcessorFactory>& processorFactory,
+                     const stdcxx::shared_ptr<TProtocolFactory>& protocolFactory,
+                     const stdcxx::shared_ptr<apache::thrift::transport::TNonblockingServerTransport>& serverTransport,
+                     const stdcxx::shared_ptr<MessageQueueManager>& messageQueueManager)
+    : TServer(processorFactory), serverTransport_(serverTransport), messageQueueManager_(messageQueueManager) {
+    init();
+    if(messageQueueManager != nullptr){
+	messageQueueProcessing_ = true;
+    }
+    setInputProtocolFactory(protocolFactory);
+    setOutputProtocolFactory(protocolFactory);
+  }
+
 
   TNonblockingServer(const stdcxx::shared_ptr<TProcessor>& processor,
                      const stdcxx::shared_ptr<TProtocolFactory>& protocolFactory,
@@ -421,8 +443,14 @@ public:
 
   bool isThreadPoolProcessing() const { return threadPoolProcessing_; }
 
+  bool isMessageQueueProcessing() const { return messageQueueProcessing_; }
+
   void addTask(stdcxx::shared_ptr<Runnable> task) {
     threadManager_->add(task, 0LL, taskExpireTime_);
+  }
+
+  void addTask(size_t id, stdcxx::shared_ptr<Runnable> task){
+    messageQueueManager_->addTask(id, task);
   }
 
   /**
@@ -825,7 +853,7 @@ private:
   TNonblockingServer* server_;
 
   /// thread number (for debugging).
-  const int number_;
+  const size_t number_;
 
   /// The actual physical thread id.
   Thread::id_t threadId_;

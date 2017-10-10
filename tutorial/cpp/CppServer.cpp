@@ -131,7 +131,6 @@ class CalculatorCloneFactory : virtual public CalculatorIfFactory {
 };
 
 int main() {
-
   TThreadedServer server(
     stdcxx::make_shared<CalculatorProcessorFactory>(stdcxx::make_shared<CalculatorCloneFactory>()),
     stdcxx::make_shared<TServerSocket>(9090), //port
