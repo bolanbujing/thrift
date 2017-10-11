@@ -21,13 +21,6 @@ public:
 	write_pos_(0){
     try{
     	deque_ = new stdcxx::shared_ptr<Runnable>[capacity];
-/*
-stdcxx::make_shared<stdcxx::shared_ptr<Runnable>>(new stdcxx::shared_ptr<Runnable>[capacity], [](stdcxx::shared_ptr<Runnable>* p){
-	  if(p!=nullptr) {
-	    delete []p;
-	    p = nullptr;
-	  }
-    	});*/
     }catch(std::exception& e){
 	
     }
@@ -41,22 +34,23 @@ stdcxx::make_shared<stdcxx::shared_ptr<Runnable>>(new stdcxx::shared_ptr<Runnabl
   }
 
   bool addTask(const stdcxx::shared_ptr<Runnable>& t){
-    if(write_sema_.wait(-1)){
+    if(write_sema_.trywait()){
 	deque_[write_pos_] = t;
 	write_pos_ = (++write_pos_)%capacity_;
 	read_sema_.post();
+	return true;
     }
-    return true;
+    return false;
   }
 
-  stdcxx::shared_ptr<Runnable> getTask(){
-    if(read_sema_.wait(-1)){
-	stdcxx::shared_ptr<Runnable> t = deque_[read_pos_];
+  bool getTask(stdcxx::shared_ptr<Runnable>& t){
+    if(read_sema_.trywait()){
+	t = deque_[read_pos_];
 	read_pos_ = (++read_pos_)%capacity_;
 	write_sema_.post();
-	return t;
+	return true;
     }
-    return stdcxx::shared_ptr<Runnable>();
+    return false;
   }
 
 private:

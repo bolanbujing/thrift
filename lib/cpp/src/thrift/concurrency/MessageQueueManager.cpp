@@ -1,4 +1,6 @@
 #include <thrift/concurrency/MessageQueueManager.h>
+#include <chrono>
+#include <thread>
 
 namespace apache {
 namespace thrift {
@@ -9,7 +11,12 @@ Worker::Worker(MessageQueueManager* manager, size_t id):
 
 void Worker::run(){
   for(;;){
-    manager_->getTask(id_)->run();
+    stdcxx::shared_ptr<Runnable> t;
+    if(manager_->getTask(id_, t)){
+	t->run();
+    }else{
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
   }
 }
 
@@ -32,16 +39,19 @@ MessageQueueManager::~MessageQueueManager(){
 }
 
 
-void MessageQueueManager::addTask(size_t id, stdcxx::shared_ptr<Runnable> t){
+bool MessageQueueManager::addTask(size_t id, const stdcxx::shared_ptr<Runnable>& t){
   thread_local static size_t k = 0;
   size_t index = 2*id+k;
-  queue_[index]->addTask(t);
-  k++;
-  k = k%2;
+  if(queue_[index]->addTask(t)){
+  	k++;
+  	k = k%2;
+	return true;
+  }
+  return false;
 }
 
-stdcxx::shared_ptr<Runnable> MessageQueueManager::getTask(size_t id){
-  return queue_[id]->getTask(); 
+bool MessageQueueManager::getTask(size_t id, stdcxx::shared_ptr<Runnable>& t){
+  return queue_[id]->getTask(t); 
 }
 
 void MessageQueueManager::start(){
