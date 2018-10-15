@@ -1,0 +1,1 @@
+/usr/bin/c++      CMakeFiles/calculator_client.dir/main.cpp.o CMakeFiles/calculator_client.dir/TBufferTransports.cpp.o CMakeFiles/calculator_client.dir/Calculator.cpp.o  -o calculator_client -rdynamic -lpthread 

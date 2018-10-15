@@ -1,0 +1,66 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements. See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership. The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License. You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+cmake_minimum_required(VERSION 3.5)
+project(TutorialServer)
+
+#Make sure gen-cpp files can be included
+#include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+include_directories(./gen-cpp)
+include_directories(/home/xiaobo/cpp/thrift/lib/cpp/src)
+include_directories(/home/xiaobo/cpp/brpc-0.9.0/build/output/include)
+include_directories(/home/xiaobo/workspace/mtsProject/ext/mts_outer/glog/include)
+include_directories(/home/xiaobo/cpp/protobuf/include)
+
+add_compile_options(-std=c++11 -DBRPC_ENABLE_CPU_PROFILER)
+
+link_directories(/home/xiaobo/cpp/thrift/tutorial/cpp/.libs)
+link_directories(/home/xiaobo/cpp/thrift/lib/cpp/.libs)
+link_directories(/home/xiaobo/cpp/brpc-0.9.0/build/output/lib)
+link_directories(/home/xiaobo/cpp/protobuf/lib)
+
+set(tutorialgencpp_SOURCES
+    gen-cpp/Calculator.cpp
+    gen-cpp/SharedService.cpp
+    gen-cpp/shared_constants.cpp
+    gen-cpp/shared_types.cpp
+    gen-cpp/tutorial_constants.cpp
+    gen-cpp/tutorial_types.cpp
+)
+add_library(tutorialgencpp STATIC ${tutorialgencpp_SOURCES})
+target_link_libraries(tutorialgencpp thrift)
+#LINK_AGAINST_THRIFT_LIBRARY(tutorialgencpp thrift)
+#LINK_AGAINST_THRIFT_LIBRARY(tutorialgencpp thriftnb)
+
+add_executable(TutorialServer CppServer.cpp)
+#target_link_libraries(TutorialServer thrift thriftnb event  brpc tcmalloc_and_profiler)
+target_link_libraries(TutorialServer tutorialgencpp thrift thriftnb event brpc tcmalloc_and_profiler)
+
+#LINK_AGAINST_THRIFT_LIBRARY(TutorialServer thrift)
+#LINK_AGAINST_THRIFT_LIBRARY(TutorialServer thriftnb tcmalloc_and_profiler)
+
+#if (ZLIB_FOUND)
+#  target_link_libraries(TutorialServer ${ZLIB_LIBRARIES})
+#endif ()
+
+#add_executable(TutorialClient CppClient.cpp)
+#target_link_libraries(TutorialClient tutorialgencpp)
+#LINK_AGAINST_THRIFT_LIBRARY(TutorialClient thrift)
+#if (ZLIB_FOUND)
+#  target_link_libraries(TutorialClient ${ZLIB_LIBRARIES})
+#endif ()

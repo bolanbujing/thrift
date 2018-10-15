@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include "./gen-cpp/Calculator.h"
+#include "Calculator.h"
 #include "binary_protocol.h"
 
 using boost::shared_ptr;                                                                                        

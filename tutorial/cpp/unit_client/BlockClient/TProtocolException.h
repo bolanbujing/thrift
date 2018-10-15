@@ -19,7 +19,7 @@
 
 #ifndef _THRIFT_PROTOCOL_TPROTOCOLEXCEPTION_H_
 #define _THRIFT_PROTOCOL_TPROTOCOLEXCEPTION_H_ 1
-
+#include "Thrift.h"
 #include <string>
 
 namespace apache {

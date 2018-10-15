@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include "./gen-cpp/Calculator.h"
+#include "Calculator.h"
 #include "binary_protocol.h"
 #include <thread>
 #include <chrono>
@@ -26,7 +26,7 @@ std::time_t getTimeStamp(){
 void tserver();
 void fun(){
 	//std::time_t tbegin = getTimeStamp();	
-	for(int i=0;i<200;i++){
+	for(int i=0;i<2000;i++){
 		tserver();
 	}
 	//std::time_t tend = getTimeStamp();
@@ -50,7 +50,7 @@ int main() {
 void tserver(){
   std::cout << "t server" << std::endl;
 
-  const char* ip = "10.8.8.239";
+  const char* ip = "127.0.0.1";
   int port = 9090;
   int backlog = 5;
 

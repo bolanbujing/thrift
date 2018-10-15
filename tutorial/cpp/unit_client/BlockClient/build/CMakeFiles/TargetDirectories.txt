@@ -1,0 +1,3 @@
+/home/xiaobo/cpp/thrift-master/tutorial/cpp/unit_client/BlockClient/build/CMakeFiles/edit_cache.dir
+/home/xiaobo/cpp/thrift-master/tutorial/cpp/unit_client/BlockClient/build/CMakeFiles/rebuild_cache.dir
+/home/xiaobo/cpp/thrift-master/tutorial/cpp/unit_client/BlockClient/build/CMakeFiles/calculator_client.dir
